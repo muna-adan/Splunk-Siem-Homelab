@@ -41,7 +41,7 @@ a fully functional SOC environment built from scratch to simulate real-world thr
 | Attack | Tool | Target | Result |
 |--------|------|--------|--------|
 | Network recon | Nmap `-sV` | Oracle Linux VM | Open ports + services identified |
-| SSH brute force | Hydra + rockyou.txt | Oracle Linux VM | 328 failed auth attempts |
+| SSH brute force | Hydra + rockyou.txt | Oracle Linux VM | 312 failed auth attempts |
 | Failed Windows logins | Manual | Windows Host | Event ID 4625 triggered |
 
 ---
