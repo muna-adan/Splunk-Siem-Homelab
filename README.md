@@ -9,12 +9,11 @@
 
 ## 📌 Overview
 
-A fully functional SOC environment built from scratch to simulate real-world threat detection, alert engineering, and incident response. This lab mirrors enterprise SOC operations — ingesting live logs, detecting attacks in real time, and documenting findings through a professional incident report.
+A fully functional SOC environment built from scratch to simulate real-world threat detection, alert engineering, and incident response. This lab mirrors enterprise SOC operations through ingesting live logs, detecting attacks in real time, and documenting findings through a professional incident report.
 
 ---
 
 ## 🏗️ Architecture
-
 
 
 ```
