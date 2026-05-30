@@ -1,107 +1,180 @@
-🛡️ Splunk SIEM Homelab — Live Threat Detection
+# 🛡️ Splunk SIEM Homelab — Live Threat Detection
 
-Environment: Oracle VirtualBox — Windows 11 Host
-SIEM: Splunk Enterprise (Oracle Linux VM)
-Attack Platform: Kali Linux VM
-Status: Complete 
+ 
+**SIEM:** Splunk Enterprise (Oracle Linux VM)  
+**Attack Platform:** Kali Linux VM  
+**Status:** Complete 
 
-📌 Overview
-A fully functional Security Operations Center (SOC) environment built from scratch to simulate real-world threat detection, alert engineering, and incident response workflows. This lab mirrors enterprise SOC operations — ingesting live logs, detecting attacks in real time, and documenting findings through professional incident reports.
+---
 
-🏗️ Architecture
-┌─────────────────────────────────────────────────────────────┐
-│               Windows 11 Host — Oracle VirtualBox            │
-│                                                               │
-│  ┌──────────────────────┐        ┌────────────────────────┐  │
-│  │   Windows 11 Host    │──logs─▶│   Oracle Linux VM      │  │
-│  │                      │ :9997  │                        │  │
-│  │  Splunk Universal    │        │  Splunk Enterprise     │  │
-│  │  Forwarder           │        │  SIEM / Log Indexer    │  │
-│  │                      │        │  Dashboard → :8000     │  │
-│  │  WinEventLog:        │        │  /var/log/secure       │  │
-│  │  Security            │        │  monitored             │  │
-│  │  System              │        └────────────┬───────────┘  │
-│  │  Application         │                     │ alerts       │
-│  └──────────────────────┘                     ▼              │
-│                                    ┌────────────────────┐    │
-│  ┌──────────────────────┐          │   SOC Dashboard    │    │
-│  │   Kali Linux VM      │          │                    │    │
-│  │                      │──attack─▶│   3 Detection      │    │
-│  │  Hydra (brute force) │          │   Rules            │    │
-│  │  Nmap (recon)        │          │   Alerts           │    │
-│  └──────────────────────┘          │   Dashboards       │    │
-│                                    └────────────────────┘    │
-└─────────────────────────────────────────────────────────────┘
+## 📌 Overview
 
-⚙️ Environment
-ComponentDetailsHost OSWindows 11VirtualizationOracle VirtualBoxSIEMSplunk Enterprise — Oracle Linux VMLog ForwarderSplunk Universal Forwarder — Windows HostAttack PlatformKali Linux VMLog SourcesWindows Event Logs (Security, System, Application), Linux /var/log/secureNetwork ModeBridged Adapter
+A fully functional SOC environment built from scratch to simulate real-world threat detection, alert engineering, and incident response. This lab mirrors enterprise SOC operations — ingesting live logs, detecting attacks in real time, and documenting findings through a professional incident report.
 
-⚔️ Attacks Simulated
-AttackToolTargetEvents GeneratedNetwork reconnaissanceNmap -sVOracle Linux VMOpen ports, running servicesSSH brute forceHydra + rockyou.txtOracle Linux VM328 failed auth attemptsFailed Windows loginsManualWindows HostEvent ID 4625 — 4 events
+---
 
-🔍 Detection Rules Built
-Rule 1 — SSH Brute Force Detection
-splindex=main sourcetype=linux_secure "Failed password"
+## 🏗️ Architecture
+
+
+
+```
+Windows 11 Host (VirtualBox)
+│
+├── Windows Host ──[logs :9997]──► Oracle Linux VM
+│   └── Splunk Universal Forwarder      └── Splunk Enterprise (SIEM)
+│       └── WinEventLog: Security            └── Dashboard :8000
+│           WinEventLog: System              └── /var/log/secure monitored
+│           WinEventLog: Application
+│
+└── Kali Linux VM ──[SSH brute force + Nmap]──► Oracle Linux VM
+```
+
+---
+
+## ⚙️ Environment
+
+| Component | Details |
+|-----------|---------|
+| Host OS | Windows 11 |
+| Virtualization | Oracle VirtualBox |
+| SIEM | Splunk Enterprise — Oracle Linux VM |
+| Log Forwarder | Splunk Universal Forwarder — Windows Host |
+| Attack Platform | Kali Linux VM |
+| Log Sources | Windows Event Logs (Security, System, Application), Linux `/var/log/secure` |
+| Network Mode | Bridged Adapter |
+
+---
+
+## ⚔️ Attacks Simulated
+
+| Attack | Tool | Target | Result |
+|--------|------|--------|--------|
+| Network recon | Nmap `-sV` | Oracle Linux VM | Open ports + services identified |
+| SSH brute force | Hydra + rockyou.txt | Oracle Linux VM | 328 failed auth attempts |
+| Failed Windows logins | Manual | Windows Host | Event ID 4625 triggered |
+
+---
+
+## 🔍 Detection Rules Built
+
+### Rule 1 — SSH Brute Force
+
+```spl
+index=main sourcetype=linux_secure "Failed password"
 | stats count by host
 | where count > 5
-Alert: Triggers when SSH failed attempts exceed 5 — scheduled every 5 minutes
-MITRE ATT&CK: T1110.001 — Brute Force: Password Guessing
+```
 
-Rule 2 — Failed Windows Login Detection
-splindex=main sourcetype=WinEventLog EventCode=4625
+- **Trigger:** Failed SSH attempts exceed 5 — runs every 5 min
+- **MITRE:** T1110.001 — Brute Force: Password Guessing
+
+---
+
+### Rule 2 — Failed Windows Logins
+
+```spl
+index=main sourcetype=WinEventLog EventCode=4625
 | stats count by Account_Name, host
 | where count > 3
-Alert: Triggers when failed logon count exceeds 3 — scheduled every 5 minutes
-MITRE ATT&CK: T1110.001 — Brute Force: Password Guessing
+```
 
-Rule 3 — New User Account Creation
-splindex=main sourcetype=WinEventLog EventCode=4720
-Alert: Triggers on any new Windows account creation event
-MITRE ATT&CK: T1136 — Create Account
+- **Trigger:** Failed logons exceed 3 — runs every 5 min
+- **MITRE:** T1110.001 — Brute Force: Password Guessing
 
-📊 SOC Dashboard
-Three-panel Splunk dashboard — SOC Overview:
-PanelSearchPurposeFailed Windows LoginsEventCode=4625 stats by Account_NameTrack credential attacks on WindowsSSH Brute Force Attemptslinux_secure "Failed password" stats by hostDetect SSH brute force from any sourceLog Volume Over Timetimechart count by sourcetypeMonitor log ingestion health across all sources
+---
 
-📄 Incident Report
-A full professional incident report documenting the SSH brute force attack is included:
-📋 incident-report-IR-2026-001.md
-Covers:
+### Rule 3 — New User Account Created
 
-Full attack timeline
-Detection methodology and SPL queries used
-MITRE ATT&CK mapping (T1110.001, T1021.004)
-Evidence documentation
-Response actions taken
-Prioritized remediation recommendations
+```spl
+index=main sourcetype=WinEventLog EventCode=4720
+```
 
+- **Trigger:** Any new Windows account creation
+- **MITRE:** T1136 — Create Account
 
-🎯 MITRE ATT&CK Coverage
-TechniqueIDTacticDetectionBrute Force: Password GuessingT1110.001Credential Accesslinux_secure Failed password ruleRemote Services: SSHT1021.004Lateral MovementSSH brute force alertCreate AccountT1136PersistenceEventCode 4720 alertNetwork Service DiscoveryT1046DiscoveryNmap scan logs
+---
 
-📸 Screenshots
-FileDescriptionscreenshots/01-splunk-dashboard.pngSOC Overview dashboard — all 3 panelsscreenshots/02-wineventlog-results.pngWindows Event Logs flowing into Splunkscreenshots/03-failed-logins-4625.pngEvent ID 4625 failed login detectionscreenshots/04-nmap-scan.pngNmap reconnaissance from Kaliscreenshots/05-hydra-brute-force.pngHydra SSH brute force runningscreenshots/06-linux-secure-logs.pngLinux auth logs with Kali IP detectedscreenshots/07-alerts-saved.pngAll 3 detection alerts configured
+## 📊 SOC Dashboard — SOC Overview
 
-💡 What I Would Do Next in a Real SOC
+| Panel | Purpose |
+|-------|---------|
+| Failed Windows Logins | Tracks failed auth attempts by account and host |
+| SSH Brute Force Attempts | Detects SSH brute force from any source |
+| Log Volume Over Time | Monitors log ingestion across all sources |
 
-Implement fail2ban — auto-block IPs after 5 failed SSH attempts
-Disable password-based SSH — enforce key-based authentication only
-Add threat intelligence feeds — enrich alerts with AbuseIPDB or VirusTotal
-Tune alert thresholds — baseline normal behavior to reduce false positives
-Build automated response playbooks — SOAR integration for containment
-Expand log sources — DNS, proxy, firewall logs for full kill chain visibility
+---
 
+## 📄 Incident Report
 
-🧰 Skills Demonstrated
-Splunk Enterprise Log Ingestion Windows Event Log Analysis Linux Auth Log Analysis Threat Detection Alert Engineering Detection Rules Dashboard Building Incident Response Incident Reporting MITRE ATT&CK Kali Linux Hydra Nmap Python Blue Team Operations
+Full incident report documenting the SSH brute force attack:
 
-📁 Repository Structure
+👉 [incident-report-IR-2026-001.md](./incident-report-IR-2026-001.md)
+
+Covers: attack timeline, SPL queries, MITRE ATT&CK mapping, evidence, response actions, and remediation recommendations.
+
+---
+
+## 🎯 MITRE ATT&CK Coverage
+
+| Technique | ID | Tactic |
+|-----------|-----|--------|
+| Brute Force: Password Guessing | T1110.001 | Credential Access |
+| Remote Services: SSH | T1021.004 | Lateral Movement |
+| Create Account | T1136 | Persistence |
+| Network Service Discovery | T1046 | Discovery |
+
+---
+
+## 📸 Screenshots
+
+| # | Screenshot | Description |
+|---|-----------|-------------|
+| 1 | ![Dashboard](./screenshots/01-splunk-dashboard.png) | SOC Overview dashboard |
+| 2 | ![WinEventLog](./screenshots/02-wineventlog-results.png) | Windows Event Logs in Splunk |
+| 3 | ![Failed Logins](./screenshots/03-failed-logins-4625.png) | Event ID 4625 detection |
+| 4 | ![Nmap](./screenshots/04-nmap-scan.png) | Nmap recon from Kali |
+| 5 | ![Hydra](./screenshots/05-hydra-brute-force.png) | Hydra brute force running |
+| 6 | ![Linux Logs](./screenshots/06-linux-secure-logs.png) | Linux auth logs with Kali IP |
+| 7 | ![Alerts](./screenshots/07-alerts-saved.png) | All 3 alerts configured |
+
+---
+
+## 🐍 Scripts
+
+| File | Description |
+|------|-------------|
+| [`scripts/deploy_alerts.py`](./scripts/deploy_alerts.py) | Python script built for CCDC 2026 — auto-deploys 59 scheduled Splunk alerts via REST API |
+
+---
+
+## 💡 What I'd Do Next in a Real SOC
+
+1. Set up fail2ban — auto-block after 5 failed SSH attempts
+2. Disable password SSH — key-based auth only
+3. Add threat intel feeds — AbuseIPDB, VirusTotal enrichment
+4. Tune thresholds — baseline normal behavior to cut false positives
+5. Build SOAR playbooks — automated containment on brute force alerts
+6. Expand log sources — DNS, proxy, firewall for full kill chain visibility
+
+---
+
+## 🧰 Skills Demonstrated
+
+`Splunk` `Log Ingestion` `Windows Event Logs` `Linux Auth Logs` `Detection Engineering` `Alert Triage` `Dashboard Building` `Incident Response` `Incident Reporting` `MITRE ATT&CK` `Kali Linux` `Hydra` `Nmap` `Python` `Blue Team`
+
+---
+
+## 📁 Repo Structure
+
+```
 splunk-siem-homelab/
-├── README.md (you're here)
+├── README.md
 ├── incident-report-IR-2026-001.md
 ├── architecture-diagram.png
 ├── detection-rules/
 │   └── alerts.conf
+├── scripts/
+│   └── deploy_alerts.py
 └── screenshots/
     ├── 01-splunk-dashboard.png
     ├── 02-wineventlog-results.png
@@ -110,3 +183,6 @@ splunk-siem-homelab/
     ├── 05-hydra-brute-force.png
     ├── 06-linux-secure-logs.png
     └── 07-alerts-saved.png
+```
+
+---
