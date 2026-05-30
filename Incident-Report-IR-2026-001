@@ -1,0 +1,96 @@
+# Incident Report — IR-2026-001
+
+**Analyst:** MyMvna
+**Date:** May 27, 2026
+**Severity:** Medium
+**Status:** Resolved
+
+---
+
+## What Happened
+
+I detected an SSH brute force attack against my Linux server during a homelab exercise. The attack came from my Kali Linux VM and generated 328 failed login attempts in about 2 minutes. My Splunk alert caught it almost immediately. No successful logins happened.
+
+---
+
+## Timeline
+
+| Time | What Happened |
+|------|---------------|
+| T+00:00 | Kali VM started SSH brute force against Oracle Linux target |
+| T+02:00 | Splunk alert fired — failed login count hit the threshold I set (>5) |
+| T+05:00 | I stopped the attack manually — 328 failed attempts in the logs |
+| T+10:00 | Checked logs to confirm no successful logins |
+| T+15:00 | Wrote this report |
+
+---
+
+## How I Detected It
+
+I had a Splunk detection rule monitoring `/var/log/secure` on the Linux VM. When failed SSH attempts crossed 5, the alert triggered.
+
+**The search I used:**
+```spl
+index=main sourcetype=linux_secure "Failed password"
+| stats count by host
+| where count > 5
+```
+
+This ran on a 5-minute schedule. It fired within the first couple minutes of the attack starting.
+
+---
+
+## Attack Details
+
+| Field | Details |
+|-------|---------|
+| Attack Type | SSH Brute Force |
+| Source | Kali Linux VM — [KALI IP] |
+| Target | Oracle Linux VM — [ORACLE LINUX IP] |
+| Service Targeted | SSH on Port 22 |
+| Tool Used | Hydra |
+| Wordlist | rockyou.txt |
+| Total Attempts | 328 |
+| Successful Logins | 0 |
+| Duration | ~2 minutes |
+
+---
+
+## What I Found in the Logs
+
+I pulled the logs in Splunk and saw 328 "Failed password" entries all coming from the same source — my Kali VM's IP. There were zero successful login entries from that IP, which confirmed the attack didn't work.
+
+**Screenshot:** `screenshots/06-linux-secure-logs.png`
+
+**MITRE ATT&CK:**
+- T1110.001 — Brute Force: Password Guessing
+- T1021.004 — Remote Services: SSH
+
+---
+
+## What I Did
+
+1. Ran the Splunk search to confirm the source IP
+2. Checked for any successful logins — found none
+3. Verified SSH was still running fine on the target
+4. Documented everything here
+
+---
+
+## What I'd Do Differently in a Real Environment
+
+| Priority | Action | Why |
+|----------|--------|-----|
+| High | Set up fail2ban — auto-block after 5 failed attempts | Would've stopped the attack way earlier |
+| High | Switch to key-based SSH only, disable password login | Brute force literally can't work without passwords |
+| Medium | Tighten the firewall to only allow SSH from trusted IPs | Less exposure overall |
+| Medium | Lower alert threshold from 5 to 3 attempts | Catch it even faster |
+| Low | Audit all default credentials across every service | Default creds were how my CCDC environment got hit too |
+
+---
+
+## Summary
+
+The detection rule worked exactly as expected. The attack was caught fast, no access was gained, and the logs gave me everything I needed to understand what happened. In a real SOC I'd follow up by blocking the source IP, opening a ticket, and escalating depending on where the traffic was coming from.
+
+---
