@@ -164,7 +164,7 @@ trigger: security or system log cleared — almost zero false positives in produ
 
 **all 7 rules deployed and active in splunk:**
 
-![alerts configured in splunk](alert-saved.png)
+![alerts configured in splunk](screenshots/alert-saved.png)
 
 ---
 
@@ -183,7 +183,7 @@ built two dashboard studio dashboards with inline SPL and custom burgundy color 
 | top attacking IPs | bar chart | source IPs ranked by brute force attempt count |
 | recent security events | table | last 20 events across all detection rules |
 
-![soc overview dashboard](soc-dashboard.png)
+![soc overview dashboard](screenshots/soc-dashboard.png)
 
 ---
 
@@ -195,7 +195,7 @@ built two dashboard studio dashboards with inline SPL and custom burgundy color 
 | tactic distribution | pie chart | events by tactic — credential access, persistence, defense evasion |
 | detection timeline | column chart | which tactics triggered on which days over 7 days |
 
-![mitre att&ck coverage dashboard](mitre%20att%26ck-coverage.png)
+![mitre att&ck coverage dashboard](screenshots/mitre%20att%26ck-coverage.png)
 
 ---
 
@@ -213,7 +213,7 @@ python3 deploy_alerts.py --list    # list without deploying
 python3 deploy_alerts.py --delete  # remove all homelab alerts
 ```
 
-![deploy_alerts.py output](alerts-saved.png)
+![deploy_alerts.py output](screenshots/alerts-saved.png)
 
 ---
 
@@ -236,7 +236,7 @@ python3 auto_triage.py --summary    # see all logged cases
 | NEEDS_REVIEW | alert fired but IP looks clean | check for false positive |
 | LIKELY_FP | low confidence | monitor |
 
-![auto_triage detecting ssh brute force](auto-triage-detection.png)
+![auto_triage detecting ssh brute force](screenshots/auto-triage-detection.png)
 
 ---
 
@@ -260,23 +260,23 @@ stuff that didn't work the first time and what i did about it:
 
 **hydra ssh brute force running from kali**
 
-![hydra brute force](hydra-brute-force.png)
+![hydra brute force](screenshots/hydra-brute-force.png)
 
 **linux auth logs with kali IP flagged in splunk**
 
-![linux secure logs](inux-secure-logs.png)
+![linux secure logs](screenshots/inux-secure-logs.png)
 
 **windows event ID 4625 — failed login detection**
 
-![windows event logs](wineventlog-results.png)
+![windows event logs](screenshots/wineventlog-results.png)
 
 **nmap recon from kali**
 
-![nmap scan](nmap-scan.png)
+![nmap scan](screenshots/nmap-scan.png)
 
 **auto_triage.py case log summary — structured JSON output**
 
-![triage cases json](triage-cases.png?raw=true)
+![triage cases json](screenshots/triage-cases.png?raw=true)
 
 </details>
 
