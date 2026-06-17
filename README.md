@@ -276,6 +276,8 @@ stuff that didn't work the first time and what i did about it:
 
 **auto_triage.py case log summary — structured JSON output**
 
+![triage cases json](triage-cases.png)
+
 
 
 </details>
