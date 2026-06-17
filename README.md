@@ -254,6 +254,7 @@ stuff that didn't work the first time and what i did about it:
 
 ## additional screenshots
 
+
 <details>
 <summary>click to expand — attack simulations & raw logs</summary>
 
@@ -273,8 +274,11 @@ stuff that didn't work the first time and what i did about it:
 
 ![nmap scan](nmap-scan.png)
 
-</details>
+**auto_triage.py case log summary — structured JSON output**
 
+![triage cases json](triage-cases.png)
+
+</details>
 ---
 
 ## incident report
